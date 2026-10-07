@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Compiled outputs
+dist/
+build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Testing & Coverage
+coverage/
+.nyc_output/
+
+# OS & Editor
+.DS_Store
+.idea/
+.vscode/
