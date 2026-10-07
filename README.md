@@ -27,38 +27,38 @@ FieldNerve is architected as a **Modular Monolith** on the backend paired with a
 
 ```mermaid
 flowchart TD
-    subgraph Client [Client Tier — React 18 + Vite + TypeScript]
-        UI[Enterprise Web Console]
-        AuthCtx[Auth Context & JWT Session Storage]
-        Views[Dashboard | Vendors | Requirements | Recommendations | Audit]
+    subgraph Client ["Client Tier — React 18 + Vite + TypeScript"]
+        UI["Enterprise Web Console"]
+        AuthCtx["Auth Context & JWT Session Storage"]
+        Views["Dashboard / Vendors / Requirements / Recommendations / Audit"]
     end
 
-    subgraph Gateway [API Gateway & Middleware Pipeline]
-        CORS[CORS Policy]
-        Helmet[Helmet Security Headers]
-        RateLimit[Rate Limiting (100 req / 15 min)]
-        ReqID[Correlation ID Middleware (x-request-id)]
-        JWTAuth[JWT Authenticator & RBAC Guard]
-        ZodVal[Zod Schema Request Validator]
+    subgraph Gateway ["API Gateway & Middleware Pipeline"]
+        CORS["CORS Policy"]
+        Helmet["Helmet Security Headers"]
+        RateLimit["Rate Limiting (100 req / 15 min)"]
+        ReqID["Correlation ID Middleware (x-request-id)"]
+        JWTAuth["JWT Authenticator & RBAC Guard"]
+        ZodVal["Zod Schema Request Validator"]
     end
 
-    subgraph Backend [Backend Modular Monolith — Express + TypeScript]
-        AuthMod[Auth Module\nBcrypt + JWT]
-        VendorMod[Vendor Management Module\nCRUD + Location Geo-Indexing]
-        DocMod[Vendor Documents & Compliance\nState Engine + Audit Triggers]
-        ReqMod[Work Requirements Module\nLifecycle Management]
-        RecMod[Recommendation Engine\nPure Function Scoring + Snapshot Run]
-        AIMod[AI Intelligence Layer\nProvider Factory]
-        AuditMod[Audit Service\nImmutable Event Logging]
+    subgraph Backend ["Backend Modular Monolith — Express + TypeScript"]
+        AuthMod["Auth Module: Bcrypt + JWT"]
+        VendorMod["Vendor Management Module"]
+        DocMod["Vendor Documents & Compliance Engine"]
+        ReqMod["Work Requirements Module"]
+        RecMod["Recommendation Engine: Pure Function Scoring"]
+        AIMod["AI Intelligence Layer"]
+        AuditMod["Audit Service: Event Logging"]
     end
 
-    subgraph DataTier [Persistence & External Services]
-        Mongo[(MongoDB Atlas / Local\nCompound & Text Indexes)]
-        OpenAI[OpenAI API (gpt-4o-mini)\nAdvisory Summaries]
-        FallbackEngine[Deterministic Fallback Engine\n100% Offline / Zero API Keys]
+    subgraph DataTier ["Persistence & External Services"]
+        Mongo[("MongoDB Database")]
+        OpenAI["OpenAI API (gpt-4o-mini)"]
+        FallbackEngine["Deterministic Fallback Engine (Offline)"]
     end
 
-    UI -->|HTTPS REST| Gateway
+    UI -->|"HTTPS REST"| Gateway
     Gateway --> AuthMod
     Gateway --> VendorMod
     Gateway --> DocMod
@@ -66,16 +66,16 @@ flowchart TD
     Gateway --> RecMod
     Gateway --> AuditMod
 
-    RecMod -->|1. Candidate Pre-Filter Query| Mongo
-    RecMod -->|2. Pure In-Memory Scoring| RecMod
-    RecMod -->|3. Persist Snapshot Run| Mongo
-    RecMod -->|4. Request Fact Summary| AIMod
+    RecMod -->|"1. Candidate Pre-Filter Query"| Mongo
+    RecMod -->|"2. Pure In-Memory Scoring"| RecMod
+    RecMod -->|"3. Persist Snapshot Run"| Mongo
+    RecMod -->|"4. Request Fact Summary"| AIMod
 
-    AIMod -->|If Key Configured| OpenAI
-    AIMod -->|If Offline / Timeout / Fallback| FallbackEngine
+    AIMod -->|"If API Key Configured"| OpenAI
+    AIMod -->|"If Offline / Timeout / Fallback"| FallbackEngine
 
-    DocMod -->|Reactive Recalculation| VendorMod
-    DocMod -->|Log Event| AuditMod
+    DocMod -->|"Reactive Recalculation"| VendorMod
+    DocMod -->|"Log Mutation Event"| AuditMod
     VendorMod --> Mongo
     DocMod --> Mongo
     ReqMod --> Mongo
@@ -115,7 +115,7 @@ erDiagram
         string email UK
         string passwordHash
         string name
-        enum role "ADMIN | PROCUREMENT_MANAGER | PROCUREMENT_USER | VIEWER"
+        string role
         boolean isActive
         date createdAt
     }
@@ -123,30 +123,28 @@ erDiagram
     VENDOR {
         ObjectId _id PK
         string name
-        enum vendorType "INDIVIDUAL | COMPANY | CONTRACTOR | AGENCY | SUPPLIER | SERVICE_PROVIDER"
-        string[] categories
+        string vendorType
+        string categories
         string description
-        object contact
-        array operatingLocations
-        number rating
-        enum status "ACTIVE | INACTIVE | SUSPENDED | BLACKLISTED"
-        enum onboardingStatus "PENDING | VERIFIED | REJECTED"
-        enum complianceStatus "COMPLIANT | EXPIRING_SOON | NON_COMPLIANT | UNDER_REVIEW"
+        string rating
+        string status
+        string onboardingStatus
+        string complianceStatus
         number yearsOfExperience
         number completedProjects
         number averageProjectValue
-        string[] capabilities
+        string capabilities
         date createdAt
     }
 
     VENDOR_DOCUMENT {
         ObjectId _id PK
         ObjectId vendorId FK
-        enum documentType "TAX_REGISTRATION | INSURANCE | TRADE_LICENSE | SAFETY_CERTIFICATE | AGREEMENT"
+        string documentType
         string documentNumber
         date issuedAt
         date expiresAt
-        enum status "VALID | EXPIRING_SOON | EXPIRED | PENDING_VERIFICATION | REJECTED"
+        string status
         string storageKey
         string fileName
         date createdAt
@@ -157,14 +155,13 @@ erDiagram
         string title
         string category
         string description
-        string[] requiredCapabilities
-        object location
+        string requiredCapabilities
         number budget
-        enum priority "LOW | MEDIUM | HIGH | CRITICAL"
-        enum status "DRAFT | OPEN | IN_PROGRESS | COMPLETED | CANCELLED"
+        string priority
+        string status
         date deadline
         number minimumRating
-        string[] mandatoryDocumentTypes
+        string mandatoryDocumentTypes
         date createdAt
     }
 
@@ -172,9 +169,7 @@ erDiagram
         ObjectId _id PK
         ObjectId workRequirementId FK
         ObjectId executedBy FK
-        string algorithmVersion "v1"
-        object weightsUsed
-        array candidateResults
+        string algorithmVersion
         number totalCandidatesEvaluated
         number qualifiedCandidatesCount
         date executedAt
@@ -183,7 +178,7 @@ erDiagram
     AI_SUMMARY {
         ObjectId _id PK
         ObjectId recommendationRunId FK
-        string providerName "openai | deterministic"
+        string providerName
         string summaryText
         string modelUsed
         date generatedAt
@@ -196,7 +191,6 @@ erDiagram
         string action
         string entityType
         string entityId
-        object metadata
         date timestamp
     }
 ```
@@ -308,12 +302,12 @@ The recommendation engine is designed with **mathematical determinism and explai
 
 ```mermaid
 flowchart LR
-    Start([Requirement & Candidates]) --> Stage1[Stage 1: DB Candidate Filter]
-    Stage1 --> Stage2[Stage 2: Hard Disqualification Filters]
-    Stage2 --> Stage3[Stage 3: Normalized Scoring 0-100]
-    Stage3 --> Stage4[Stage 4: 6-Tier Tie-Breaker]
-    Stage4 --> Stage5[Stage 5: Explainability Engine]
-    Stage5 --> Stage6[Stage 6: Snapshot Persistence & AI Advisory]
+    Start(["Requirement & Candidates"]) --> Stage1["Stage 1: DB Candidate Filter"]
+    Stage1 --> Stage2["Stage 2: Hard Disqualification Filters"]
+    Stage2 --> Stage3["Stage 3: Normalized Scoring 0-100"]
+    Stage3 --> Stage4["Stage 4: 6-Tier Tie-Breaker"]
+    Stage4 --> Stage5["Stage 5: Explainability Engine"]
+    Stage5 --> Stage6["Stage 6: Snapshot Persistence & AI Advisory"]
 ```
 
 ### Stage 1: Candidate Pre-Filtering (Database Layer)
@@ -413,12 +407,12 @@ Every recommendation includes a human-readable explanation payload:
 
 ```mermaid
 flowchart TD
-    RecEngine[Deterministic Recommendation Engine] -->|Ranked Results + Explanations| AIFactory{AI Provider Factory}
-    AIFactory -->|If OPENAI_API_KEY set & AI_PROVIDER=openai| OpenAIProv[OpenAIProvider (gpt-4o-mini)]
-    AIFactory -->|If AI_PROVIDER=deterministic or API offline| FallbackProv[DeterministicFallbackProvider]
+    RecEngine["Deterministic Recommendation Engine"] -->|"Ranked Results + Explanations"| AIFactory{"AI Provider Factory"}
+    AIFactory -->|"If OPENAI_API_KEY set & AI_PROVIDER=openai"| OpenAIProv["OpenAIProvider (gpt-4o-mini)"]
+    AIFactory -->|"If AI_PROVIDER=deterministic or API offline"| FallbackProv["DeterministicFallbackProvider"]
     
-    OpenAIProv -->|Synthesize Executive Markdown| FinalSummary[Executive Advisory Summary]
-    FallbackProv -->|Algorithmic Markdown Synthesis| FinalSummary
+    OpenAIProv -->|"Synthesize Executive Markdown"| FinalSummary["Executive Advisory Summary"]
+    FallbackProv -->|"Algorithmic Markdown Synthesis"| FinalSummary
 ```
 
 * **`OpenAIProvider`**: Invokes OpenAI (`gpt-4o-mini`) with temperature `0.2` and strict system instructions to act purely as an **advisory procurement synthesizer**. It transforms the structured breakdown into an executive briefing without altering ranks.
